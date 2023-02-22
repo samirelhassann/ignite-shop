@@ -8,6 +8,10 @@ export const SuccessContainer = styled("main", {
   height: 656,
   margin: "0 auto",
 
+  ".logoImage": {
+    marginBottom: "6.5rem",
+  },
+
   h1: {
     fontSize: "$2xl",
     color: "$gray100",
@@ -36,14 +40,19 @@ export const SuccessContainer = styled("main", {
   },
 });
 
+export const ImagesList = styled("div", {
+  display: "flex",
+  marginLeft: "3.4375rem",
+  marginBottom: "4rem",
+});
+
 export const ImageContainer = styled("div", {
-  width: "100%",
-  maxWidth: 130,
-  height: 145,
-  marginTop: "4rem",
+  marginLeft: "-3.4375rem",
+
   background: "linear-gradient(180deg, #1ea483 0%, #7465d4 100%)",
-  borderRadius: 8,
+  borderRadius: "50%",
   padding: "0.25rem",
+  boxShadow: "0px 0px 60px rgba(0, 0, 0, 0.8)",
 
   display: "flex",
   alignItems: "center",

@@ -1,7 +1,8 @@
-import React, { useState } from "react";
+import React, { useContext, useState } from "react";
 
+import { CheckoutContext, Product } from "@/contexts/CheckoutContext";
+import { FormatPriceBrl } from "@/helpers/FormatPriceBrl";
 import { stripe } from "@/lib/Stripe";
-import axios from "axios";
 import { GetStaticPaths, GetStaticProps } from "next";
 import Head from "next/head";
 import Image from "next/image";
@@ -13,37 +14,29 @@ import {
   ProductDetails,
 } from "@/styles/pages/product";
 
-interface Product {
-  id: string;
-  name: string;
-  imageUrl: string;
-  price: string;
-  defaultPriceId: string;
-  description: string;
-}
-
 interface ProductProps {
   productData: Product;
 }
 
-export default function Product({ productData }: ProductProps) {
+export default function ProductDetail({ productData }: ProductProps) {
   const [isLoadingCheckout, setIsLoadingCheckout] = useState(false);
 
-  const handleBuyProduct = async () => {
+  const { addProductToCart, cart } = useContext(CheckoutContext);
+
+  const isProductInCart = cart.some((item) => item.id === productData.id);
+
+  const buttonLabel = `${
+    isProductInCart ? "Produto já adicionado a sacola 🎉" : "Colocar na sacola"
+  }`;
+
+  const isButtonDisabled = isLoadingCheckout || isProductInCart;
+
+  const handleBuyProduct = () => {
     setIsLoadingCheckout(true);
 
-    try {
-      const response = await axios.post("/api/checkout", {
-        priceId: productData.defaultPriceId,
-      });
+    addProductToCart(productData);
 
-      const { checkoutUrl } = response.data;
-
-      window.location.href = checkoutUrl;
-    } catch (err) {
-      setIsLoadingCheckout(false);
-      alert("Falha ao realizar a compra");
-    }
+    setIsLoadingCheckout(false);
   };
 
   return (
@@ -63,12 +56,15 @@ export default function Product({ productData }: ProductProps) {
 
         <ProductDetails>
           <h1>{productData.name}</h1>
-          <span>{productData.price}</span>
+          <span>{FormatPriceBrl(productData.price)}</span>
 
           <p>{productData.description}</p>
 
-          <button disabled={isLoadingCheckout} onClick={handleBuyProduct}>
-            Comprar agora
+          <button
+            disabled={isButtonDisabled}
+            onClick={() => handleBuyProduct()}
+          >
+            {buttonLabel}
           </button>
         </ProductDetails>
       </ProductContainer>
@@ -94,19 +90,14 @@ export const getStaticProps: GetStaticProps<any, { id: string }> = async ({
 
   const defaultPrice = product.default_price as Stripe.Price;
 
-  const price =
-    defaultPrice.unit_amount &&
-    new Intl.NumberFormat("pt-BR", {
-      style: "currency",
-      currency: "BRL",
-    }).format(defaultPrice.unit_amount / 100);
+  const price = defaultPrice.unit_amount && defaultPrice.unit_amount / 100;
 
   const productData = {
     id: product.id,
     name: product.name,
     imageUrl: product.images[0],
     price,
-    defaultPriceId: defaultPrice.id,
+    priceId: defaultPrice.id,
     description: product.description,
   } as Product;
 

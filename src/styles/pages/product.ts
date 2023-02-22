@@ -63,7 +63,7 @@ export const ProductDetails = styled("div", {
     fontSize: "$md",
 
     "&:disabled": {
-      opacity: 0.5,
+      opacity: 0.7,
       cursor: "not-allowed",
     },
 

@@ -7,7 +7,14 @@ import Image from "next/image";
 import Link from "next/link";
 import Stripe from "stripe";
 
-import { ImageContainer, SuccessContainer } from "@/styles/pages/success";
+import {
+  ImageContainer,
+  ImagesList,
+  SuccessContainer,
+} from "@/styles/pages/success";
+
+import logoImg from "../assets/logo.svg";
+
 
 interface SuccessSessionProduct {
   name: string;
@@ -29,16 +36,36 @@ export default function Success({ customerName, product }: SuccessProps) {
       </Head>
 
       <SuccessContainer>
-        <h1>Compra Efetuada</h1>
+        <Image className="logoImage" src={logoImg} alt="logo" />
 
-        <ImageContainer>
-          <Image
-            src={product.imageUrl}
-            alt={product.name}
-            width={114}
-            height={106}
-          />
-        </ImageContainer>
+        <ImagesList>
+          <ImageContainer>
+            <Image
+              src={product.imageUrl}
+              alt={product.name}
+              width={140}
+              height={140}
+            />
+          </ImageContainer>
+          <ImageContainer>
+            <Image
+              src={product.imageUrl}
+              alt={product.name}
+              width={140}
+              height={140}
+            />
+          </ImageContainer>
+          <ImageContainer>
+            <Image
+              src={product.imageUrl}
+              alt={product.name}
+              width={140}
+              height={140}
+            />
+          </ImageContainer>
+        </ImagesList>
+
+        <h1>Compra Efetuada!</h1>
 
         <p>
           Uhuul <strong>{customerName}</strong>, sua{"  "}
@@ -76,6 +103,7 @@ export const getServerSideProps: GetServerSideProps = async ({ query }) => {
         name: product.name,
         imageUrl: product.images[0],
       },
+      hideHeader: true,
     },
   };
 };

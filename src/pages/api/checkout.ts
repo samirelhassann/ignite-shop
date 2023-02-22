@@ -9,10 +9,10 @@ export default async function handler(
     return res.status(405).json({ error: "Method not allowed" });
   }
 
-  const { priceId } = req.body;
+  const { priceIds } = req.body;
 
-  if (!priceId) {
-    return res.status(400).json({ error: "Price not found" });
+  if (!Array.isArray(priceIds) || priceIds.length === 0) {
+    return res.status(400).json({ error: "Price ids not correctly informed" });
   }
 
   const successUrl = `${process.env.NEXT_URL}/success?session_id={CHECKOUT_SESSION_ID}`;
@@ -20,12 +20,12 @@ export default async function handler(
 
   const checkoutSession = await stripe.checkout.sessions.create({
     mode: "payment",
-    line_items: [
-      {
-        price: priceId, 
+    line_items: priceIds.map((priceId: string) => {
+      return {
+        price: priceId,
         quantity: 1,
-      },
-    ],
+      };
+    }),
     cancel_url: cancelUrl,
     success_url: successUrl,
   });
