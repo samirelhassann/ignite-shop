@@ -13,6 +13,7 @@ This project was built with the help of the [Rocketseat](https://www.rocketseat.
 
 ## Additional Libraries
 
+- stitches
 - keen-slider
 - phospor-react
 - stripe
