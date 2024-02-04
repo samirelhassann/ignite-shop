@@ -3,7 +3,7 @@ import React, { useContext, useState } from "react";
 import { CheckoutContext, Product } from "@/contexts/CheckoutContext";
 import { FormatPriceBrl } from "@/helpers/FormatPriceBrl";
 import { stripe } from "@/lib/Stripe";
-import { GetServerSideProps } from "next";
+import { GetStaticPaths, GetStaticProps } from "next";
 import Head from "next/head";
 import Image from "next/image";
 import Stripe from "stripe";
@@ -72,48 +72,41 @@ export default function ProductDetail({ productData }: ProductProps) {
   );
 }
 
-export const getServerSideProps: GetServerSideProps<any, { id: string }> = async ({
+export const getStaticPaths: GetStaticPaths = async () => {
+  return {
+    paths: [{ params: { id: "prod_NNRU2hL8xKlBFw" } }, { params: { id: "prod_NNRTyzvWSy1WrY" } }, { params: { id: "prod_NNRTtdC1hhwWxq" } }, { params: {id: "prod_NNRSixwaFujpvS"}}],
+    fallback: false
+  };
+};
+
+export const getStaticProps: GetStaticProps<any, { id: string }> = async ({
   params,
 }) => {
   const productId = params?.id;
 
-  let productData: Product | null = null;
+  const product = await stripe.products.retrieve(productId!, {
+    expand: ["default_price"],
+  });
 
-  try {
-    const product = await stripe.products.retrieve(productId!, {
-      expand: ["default_price"],
-    });
+  const defaultPrice = product.default_price as Stripe.Price;
 
-    const defaultPrice = product.default_price as Stripe.Price;
-    const price = defaultPrice.unit_amount ? defaultPrice.unit_amount / 100 : 0;
+  const price = defaultPrice.unit_amount && defaultPrice.unit_amount / 100;
 
-    productData = {
-      id: product.id,
-      name: product.name,
-      imageUrl: product.images[0],
-      price,
-      priceId: defaultPrice.id,
-      description: product.description!,
-    };
-  } catch (error) {
-    console.error("Error fetching product:", error);
-    // Handle errors or invalid product ID scenarios
-    // For example, you might want to redirect to a custom error page or the homepage
-  }
-
-  // If no product data could be retrieved, you could redirect the user or return an error page
-  if (!productData) {
-    return {
-      redirect: {
-        destination: "/error-page", // Adjust the destination as needed
-        permanent: false,
-      },
-    };
-  }
+  const productData = {
+    id: product.id,
+    name: product.name,
+    imageUrl: product.images[0],
+    price,
+    priceId: defaultPrice.id,
+    description: product.description,
+  } as Product;
 
   return {
     props: {
       productData,
     },
+
+    // 2 hours refresh
+    revalidate: 60 * 60 * 1,
   };
 };
